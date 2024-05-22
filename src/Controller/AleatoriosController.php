@@ -9,6 +9,7 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/aleatorios', name: 'app_aleatorios_')]
 class AleatoriosController extends AbstractController
 {
+    // Usamos anotaciones para rutas
     #[Route('/ej1', name: 'aleatorios1')]
     public function index(): Response
     {
@@ -17,6 +18,7 @@ class AleatoriosController extends AbstractController
         ]);
     }
 
+    // Usamos anotaciones para rutas
     #[Route('/ej2', name: 'aleatorios2')]
     public function index2(): Response
     {
@@ -25,7 +27,7 @@ class AleatoriosController extends AbstractController
         ]);
     }
 
-
+    // Usamos routes.yaml
     public function index3(): Response
     {
         return $this->render('aleatorios/index.html.twig', [
@@ -33,6 +35,7 @@ class AleatoriosController extends AbstractController
         ]);
     }
 
+    // Pasamos parámetros
     #[Route('/ej4/{num1}/{num2}', name: 'aleatorios4')]
     public function index4(int $num1, int $num2): Response
     {
