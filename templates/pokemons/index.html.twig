@@ -17,4 +17,35 @@
         <li>Your template at <code>/var/www/html/Pokedex/templates/pokemons/index.html.twig</code></li>
     </ul>
 </div>
+
+<section class="container mt-4">
+    <h1>Lista Pokemons</h1>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Altura</th>
+                <th>Peso</th>
+                <th>Sexo</th>
+                <th>Categoria</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pokemon in Bichos %}
+            <tr>
+                <td>{{ pokemon.id}}</td>
+                <td>{{ pokemon.nombre}}</td>
+                <td>{{ pokemon.altura}}</td>
+                <td>{{ pokemon.peso}}</td>
+                <td>{{ pokemon.sexo}}</td>
+                <td>{{ pokemon.idCategoria.categoria}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+
+</section>
+
 {% endblock %}
