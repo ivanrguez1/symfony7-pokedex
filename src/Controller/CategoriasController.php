@@ -20,6 +20,7 @@ class CategoriasController extends AbstractController
         ]);
     }
 
+    // 01. Inserción 1 registro sin parámetros
     #[Route('/insertar', name: 'insertar')]
     public function insertar(ManagerRegistry $doctrine): Response
     {
@@ -34,6 +35,7 @@ class CategoriasController extends AbstractController
             $categoria->getId());
     }
 
+    // 02.  Inserción 1 registro con parámetros
     #[Route('/insertar/{categoria}', name: 'insertarParam')]
     public function insertarParam(
         EntityManagerInterface $gestorEntidades,
@@ -49,6 +51,7 @@ class CategoriasController extends AbstractController
             $nuevaCategoria->getId());
     }
 
+    // 03. Inserción Array sin parámetros
     #[Route('/insertar-array', name: 'insertarArray')]
     public function insertarArray(
         EntityManagerInterface $gestorEntidades
