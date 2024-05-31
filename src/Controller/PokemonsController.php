@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Categorias;
 use App\Entity\Pokemons;
 use App\Repository\PokemonsRepository;
+use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -122,16 +123,19 @@ class PokemonsController extends AbstractController
     }
 
     // 08. Consulta por parámetro y ordenación, salida array JSON
-    #[Route('/verPokemonsOrdenadosJSON/{sexo}', 
-        name: 'verpokemonsOrdenadosjsonparam')]
-    public function verPokemonsOrdenadosJSONParam
-    (PokemonsRepository $repoPokemons, bool $sexo): Response
+    #[Route(
+        '/verPokemonsOrdenadosJSON/{sexo}',
+        name: 'verpokemonsOrdenadosjsonparam'
+    )]
+    public function verPokemonsOrdenadosJSONParam(PokemonsRepository $repoPokemons, bool $sexo): Response
     {
         // Consultar pokemons por sexo
         // Y ordenarlos por altura de mayor a menor
-        $pokemons = 
+        $pokemons =
             $repoPokemons->findBy(
-                ["sexo" => $sexo,],["altura" => "DESC"]);
+                ["sexo" => $sexo,],
+                ["altura" => "DESC"]
+            );
 
         $datos = [];
         foreach ($pokemons as $pokemon) {
@@ -147,5 +151,51 @@ class PokemonsController extends AbstractController
 
         //return new JsonResponse($datos);
         return $this->json($datos);
+    }
+
+
+    // 09. Actualizar con parámetros
+    #[Route(
+        '/actualizar/{id}/{altura}/{peso}',
+        name: 'actualizarparams'
+    )]
+    public function actualizarParams(
+        ManagerRegistry $doctrine,
+        int $id,
+        int $altura,
+        float $peso
+    ): Response {
+        $gestorEntidades = $doctrine->getManager();
+
+        // Sacamos el pokemon que vamos a actualizar
+        $repoPokemons = $gestorEntidades->getRepository(Pokemons::class);
+        $pokemon = $repoPokemons->find($id);
+
+        if (!$pokemon) {
+            throw $this->createNotFoundException("Pokemon NO encontrado");
+        }
+
+        $pokemon->setAltura($altura);
+        $pokemon->setPeso($peso);
+        $gestorEntidades->flush();
+
+        // Vamos a hacer una redirección
+        return $this->redirectToRoute("app_pokemons_verpokemons");
+    }
+
+    // 10. Eliminación con parámetro (id)
+    #[Route('/eliminar/{id}', name: 'eliminar')]
+    public function eliminar(
+        EntityManagerInterface $gestorEntidades,
+        int $id
+    ): Response {
+        // Sacamos el pokemon que vamos a eliminar
+        $repoPokemons = $gestorEntidades->getRepository(Pokemons::class);
+        $pokemon = $repoPokemons->find($id);
+
+        // Borro y actualizo
+        $gestorEntidades->remove($pokemon);
+        $gestorEntidades->flush();
+        return new Response("Pokemon eliminado con ID: " . $id);
     }
 }
