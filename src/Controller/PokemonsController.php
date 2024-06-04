@@ -8,9 +8,15 @@ use App\Repository\PokemonsRepository;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
-
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Constraints\Json;
@@ -197,5 +203,69 @@ class PokemonsController extends AbstractController
         $gestorEntidades->remove($pokemon);
         $gestorEntidades->flush();
         return new Response("Pokemon eliminado con ID: " . $id);
+    }
+
+    // 11. Formulario 
+    // 2 inyecciones: la solicitud (request) y el doctrine
+    #[Route('/formulario', name: 'formulario')]
+    public function formulario(Request $request, 
+    ManagerRegistry $doctrine): Response
+    {
+        // a. Creamos el objeto a guardar vacío
+        $pokemon = new Pokemons();
+
+        // b. Creamos el objeto formulario
+        $formulario = $this->createFormBuilder($pokemon)
+            ->add("nombre", TextType::class, 
+            ["attr" => ["class" => "form-control"] ])
+            ->add("altura", IntegerType::class, 
+            ["attr" => ["class" => "form-control"] ])
+            ->add("peso", NumberType::class, 
+            ['attr' => [ 'class' => 'form-control',
+                'step' => '0.01' ],
+                'html5' => true ])
+
+            ->add("sexo", ChoiceType::class, 
+            [   "choices" => [
+                    "Hembra" => true,
+                    "Macho" => false, ],
+                "attr" => ["class" => "form-control"] 
+            ])
+
+            // Añadimos el campo del FK
+            ->add("idCategoria", EntityType::class,
+            [
+                "class" => Categorias::class,   // Entidad
+                // Choice label -> nombre tabla FK en minusculas
+                "choice_label" => "categoria",
+                "placeholder" => "Seleciona categoria",
+                "attr" => ["class" => "form-select"] 
+            ])   
+            
+
+            ->add("guardar", SubmitType::class, 
+                ["attr" => ["class" => "btn btn-danger"], 
+                    "label" => "Insertar Pokémon"])
+            ->getForm();
+
+        // c. Tratar el formulario
+        // Recoger datos del formulario e insertar en la BBDD
+        $formulario->handleRequest($request);
+        
+        if ($formulario->isSubmitted() && $formulario->isValid()) {
+            // Guardamos el pokemon 
+            $gestorEntidades = $doctrine->getManager();
+            $gestorEntidades->persist($pokemon);
+            $gestorEntidades->flush();
+
+            // Redireccionamos
+            return $this->redirectToRoute("app_pokemons_verpokemons");
+        }
+
+        // d. Pintar el formulario
+        return $this->render('pokemons/formulario.html.twig', [
+            'controller_name' => 'PokemonsController',
+            "formulario" => $formulario,
+        ]);
     }
 }
